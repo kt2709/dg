@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.8/angular-filter.min.js"></script>
+
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+<body>
+
+<style>
+  .typeahead-demo .custom-popup-wrapper {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    background-color: #f9f9f9;
+  }
+
+  .typeahead-demo .custom-popup-wrapper > .message {
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+    color: #868686;
+  }
+
+  .typeahead-demo .custom-popup-wrapper > .dropdown-menu {
+    position: static;
+    float: none;
+    display: block;
+    min-width: 160px;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+table, th , td  {
+  border: 1px solid grey;
+  border-collapse: collapse;
+  padding: 5px;
+}
+table tr:nth-child(odd) {
+  background-color: #f1f1f1;
+}
+table tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+</style>
+
+
+<div class='container-fluid typeahead-demo' ng-app="dgApp" ng-controller="dgCtrl"> 
+ <h4>Search Gold Prices by Indian City </h4>
+    <input type="text" ng-model="selected" uib-typeahead="x.city for x in results.data | unique:'city' | filter:$viewValue | limitTo:8" class="form-control" placeholder='Type city'>
+
+<table>
+	<tr ng-show="results.data.length != 0" ng-repeat="x in results.data |  filter:{'city':selected} ">
+ 	 <td> {{  x.city }} </td>
+ 	 <td> {{  x.date }} </td>
+ 	 <td> {{  x.price24 }} </td>
+ 	 <td> {{  x.price22 }} </td>
+	</tr>
+	<tr>
+		<td ng-show=" !(results.data | filter:{'city':selected} ).length">
+			No data available for {{selected}} 
+		</td>
+	</tr>
+</table>
+
+</div>
+
+<script>
+//var app = angular.module('dgApp', []);
+angular.module('dgApp', ['ui.bootstrap','angular.filter']);
+
+angular.module('dgApp').controller('dgCtrl', function($scope, $http) {
+	$http.get('https://powerful-sands-79831.herokuapp.com/').then(function(d) {
+   		$scope.results = d;
+   		console.log($scope.results)
+	});
+
+	$http.get('http://ip-api.com/json')
+		.then(function(coordinates) {
+			$scope.selected = coordinates.data.city;
+	});
+
+});
+</script>
+
+</body>
+</html>
