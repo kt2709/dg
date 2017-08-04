@@ -1,3 +1,26 @@
+.flex {
+  display: flex;
+  flex-flow: row wrap;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.small-tile {
+  display: inline-block;
+  padding-bottom: 8px;
+  padding-right: 8px;
+}
+
+.left-txt {
+  line-height: 19px;
+  padding-right: 16px;
+}
+
+.std-margin-btm {
+  margin-bottom: 24px;
+}
 
 .ng-cloak{
   display: none !important;

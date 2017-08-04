@@ -38,10 +38,9 @@ app.all('*', function(req, res,next) {
 });
 
 
-app.get('/', function(request, response) {
+app.get('/goldrates', function(request, response) {
   const pg = require('pg')  
-  const conString = process.env.DATABASE_URL || 'postgres://tlvzcppkdgyuvb:cc7dc6356ba0c9f60a6fd92bc314d028a64fd7f0c405d9f02f2cf1381ae7427d@ec2-184-73-167-43.compute-1.amazonaws.com:5432/da3pt2u3t9gl65';
-
+  const conString = process.env.DATABASE_URL || 'postgres://hhxshvtgknprug:31f0288488d39087e107aac5d168deaa8dc654887d514149407b045afac2cb8c@ec2-23-21-158-253.compute-1.amazonaws.com:5432/ddndh497lf9bs8';
 
   pg.defaults.ssl = true;
 
@@ -59,6 +58,31 @@ app.get('/', function(request, response) {
     })
   });
 });
+
+app.get('/goldshops/:city', function(request, response) {
+  const pg = require('pg')  
+  const conString = process.env.DATABASE_URL || 'postgres://hhxshvtgknprug:31f0288488d39087e107aac5d168deaa8dc654887d514149407b045afac2cb8c@ec2-23-21-158-253.compute-1.amazonaws.com:5432/ddndh497lf9bs8';
+
+  var city = request.params.city;
+
+  pg.defaults.ssl = true;
+
+  pg.connect(conString, function (err, client, done) {  
+    if (err) {
+      return console.error('error fetching client from pool', err)
+    }
+    client.query("SELECT * FROM goldshops where city=$1",[city], function (err, result) {
+      done()
+
+      if (err) {
+        return console.error('error happened during query', err)
+      }
+      response.json(result.rows)
+    })
+  });
+  
+});
+
 
 /*app.get('/', function(request, response) {
 	fs.readFile('data.json', 'utf8', function(err, contents) {

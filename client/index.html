@@ -67,66 +67,101 @@
 
                 <div class="search-bar-container row ng-cloak" ng-cloak>
 
-                    <h5 class='md-display-1'>Search for Gold Prices in </h5>
-                     
-                      <input type="text" ng-model="selected" uib-typeahead="x.city for x in results.data | unique:'city' | filter:$viewValue " class="form-control" placeholder='Type city' autofocus />  
+                    <div class="col s12 m12">
+                      <div class="flex std-margin-btm">
+                        <h5 class='md-display-1 left-txt'>Search for Gold Prices in </h5>
+                       
+                        <input type="text" ng-model="selected" uib-typeahead="x.city for x in rates.data | unique:'city' | filter:$viewValue " typeahead-on-select="fetchShops(selected)" class="form-control flex-1" placeholder='Type city' autofocus />
+                      </div>  
 
-                      <a class="waves-effect cyan waves-light btn" ng-click="selected = 'Delhi'">Delhi</a>
-                      <a class="waves-effect cyan waves-light btn" ng-click="selected = 'Mumbai'">Mumbai</a>
-                      <a class="waves-effect cyan waves-light btn" ng-click="selected = 'Chennai'">Chennai</a>
-                      <a class="waves-effect cyan waves-light btn" ng-click="selected = 'Kolkata'">Kolkata</a>
-                      <a class="waves-effect cyan waves-light btn" ng-click="selected = 'Hyderabad'">Hyderabad</a>
-                      <a class="waves-effect cyan waves-light btn" ng-click="selected = 'Bangalore'">Bangalore</a> 
+                      <div ng-repeat="city in cities" class="std-margin-btm small-tile">
+                        <a class="waves-effect cyan waves-light btn" ng-click="fetchShops(city)">{{city}}</a>
+                      
+                      </div>
+                    </div>
 
-
-                     <div class="row" ng-if="selected && (results.data | filter:{'city':selected} ).length != 0" ng-cloak>
+                     <div class="row" ng-if="selected && (rates.data | filter:{'city':selected} ).length != 0" ng-cloak>
                       <div class="col s12 m6">
                         <div class="card-panel teal center-align">
-                            <span class="card-title activator white-text text-darken-4 head-title">Today's Gold Price </span>
+                            <span class="card-title activator white-text text-darken-4 head-title">Today's Gold Price in {{selected}}</span>
                             <p>
                                 <h1 class="white-text md-display-4">
-                                    {{(results.data | filter:{'city':selected} )[0].price24|currency:'&#8377;':0}}
+                                    {{(rates.data | filter:{'city':selected} )[0].price24|currency:'&#8377;':0}}
                                 </h1>
                             </p>
                         </div>
                       </div>
                       <div class="col s12 m6">
                         <div class="card-panel teal lighten-2 center-align">
-                            <span class="card-title activator white-text text-darken-4 head-title">Yesterday's Gold Price </span>
+                            <span class="card-title activator white-text text-darken-4 head-title">Yesterday's Gold Price in {{selected}}</span>
                             <p>
                                 <h1 class="white-text md-display-4">
-                                    {{(results.data | filter:{'city':selected} )[1].price24|currency:'&#8377;':0}}
+                                    {{(rates.data | filter:{'city':selected} )[1].price24|currency:'&#8377;':0}}
                                 </h1>
                             </p>
                         </div>
                       </div>
                     </div>
-                    <div class="card" ng-if="selected && (results.data | filter:{'city':selected} ).length != 0" ng-cloak>
-                       
-                        <div class="card-content center-align">
-                            <span class="card-title activator grey-text text-darken-4 center-align">Historical Prices </span>
+
+                    <div class="card" ng-if="selected && (rates.data | filter:{'city':selected} ).length != 0" ng-cloak>
+                       <div class="col s12 m6">
+                          <div class="card-content center-align z-depth-4">
+                              <span class="card-title activator grey-text text-darken-4 center-align">Historical Prices in {{selected}} </span>
+                              <p>
+                                  <table class='striped'>
+                                      <thead>
+                                          <tr>
+                                              <th> Date </th>
+                                              <th> 24 Karat </th>
+                                              <th> 22 Karat </th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          <tr ng-show="rates.data.length != 0" ng-repeat="rate in rates.data |  filter:{'city':selected} | filter:paginate">
+                                               <td> {{  rate.date | date:'dd MMM yyyy':'UTC' }} </td>
+                                               <td> {{  rate.price24|currency:'&#8377;':0 }} </td>
+                                               <td> {{  rate.price22|currency:'&#8377;':0 }} </td>
+                                          </tr>
+                                      </tbody>
+                                  </table>
+                                  <pagination total-items="totalItems" ng-model="currentPage"
+                                    max-size="5" boundary-links="true"
+                                    items-per-page="numPerPage" class="pagination-sm">
+                                  </pagination>
+                              </p>
+                          </div> 
+                        </div> 
+
+                        <div class="col s12 m6" ng-if="selected && (shops.data | filter:{'city':selected} ).length != 0">
+                          <div class="card-content center-align z-depth-4">
+                            <span class="card-title activator grey-text text-darken-4 center-align">Gold Shops in {{selected}} </span>
                             <p>
                                 <table class='striped'>
                                     <thead>
                                         <tr>
-                                            <th> Date </th>
-                                            <th> 24 Karat </th>
-                                            <th> 22 Karat </th>
+                                            <th> Name </th>
+                                            <th> Address </th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-show="results.data.length != 0" ng-repeat="x in results.data |  filter:{'city':selected} ">
-                                             <td> {{  x.date | date:'dd MMM yyyy':'UTC' }} </td>
-                                             <td> {{  x.price24|currency:'&#8377;':0 }} </td>
-                                             <td> {{  x.price22|currency:'&#8377;':0 }} </td>
+                                        <tr ng-show="shops.data.length != 0" ng-repeat="shop in shops.data |  filter:{'city':selected} ">
+                                             <td> {{  shop.name }} </td>
+                                             <td> {{  shop.address }} </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </p>
-                        </div>    
+                          </div>    
+                        </div>
                     </div>
 
-                    <div class="col s12 m12" ng-show=" !(results.data | filter:{'city':selected} ).length">
+
+                     <div class="card" ng-if="selected && (shops.data | filter:{'city':selected} ).length != 0" ng-cloak>
+                       
+                        
+                    </div>
+
+                    <div class="col s12 m12" ng-show=" !(rates.data | filter:{'city':selected} ).length">
                         <div class="card-panel  red accent-2 center-align">
                                 <span class="white-text md-body-1">
                                     Sorry! No data available for {{selected}} 
