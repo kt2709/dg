@@ -18,15 +18,35 @@ def extractCityName(city_link):
 def convertToDate(dateStr):
 	return datetime.strptime(''.join(dateStr.split(" ")[3:6]), '%d%b%Y')
 
+def convertToDate2(dateStr):
+	return datetime.strptime(''.join(dateStr.split(" ")), '%d%b%Y')
+
 def extractPrice(priceStr):
 	return (priceStr.split(" ")[1].replace(",",""))
 
 page = urllib.urlopen(BASE_URL).read()
 page_soup = BeautifulSoup(page,"lxml")
+
+today_table = page_soup.find('table', {'class': 'dbx-hp-tdymn'})
+today_rows = today_table.findAll('tr')
+today_cols = today_rows[1].findAll('td')
+yday_cols = today_rows[4].findAll('td')
+
+today_date = convertToDate2(today_cols[0].find('span').getText()).strftime("%Y-%m-%d")
+today_gold_price = extractPrice(today_cols[2].getText())
+yday_date = convertToDate2(yday_cols[0].find('span').getText()).strftime("%Y-%m-%d")
+yday_gold_price = extractPrice(yday_cols[2].getText())
+
+records = []
+records.append({"city":'India', "date":today_date, "price24":today_gold_price, "price22":today_gold_price})
+#records.append({"city":'India', "date":yday_date, "price24":yday_gold_price, "price22":yday_gold_price})
+
+#print today_date,today_gold_price,yday_date,yday_gold_price,highest_gold_price,lowest_gold_price
+
+
 table = page_soup.find('table', {'class': 'dbx-indctylkbx'})
 rows = table.findAll('tr')
 
-records = []
 for (ix,tr) in enumerate(rows):
 	if ix > 0:
 		cols = tr.findAll('td')
@@ -37,12 +57,14 @@ for (ix,tr) in enumerate(rows):
 				new_url = BASE_URL+"/"+city_link
 				city = urllib.urlopen(new_url).read()
 				city_soup = BeautifulSoup(city,"lxml")
-				city_table = city_soup.find('table', {'class': 'dbx-l5dys'})
+				city_table = city_soup.find('table', {'class': 'dbx-hp-tdymn'})
 				city_rows = city_table.findAll('tr')
 				latest_city_row = city_rows[2]
 
 				latest_city_col = latest_city_row.findAll('td')
-				date = convertToDate(latest_city_col[0].getText()).strftime("%Y-%m-%d")
+				latest_city_col_date = latest_city_col[0].find('span')
+				date =  convertToDate2(latest_city_col_date.getText()).strftime("%Y-%m-%d")
+				#date = convertToDate(latest_city_col[0].getText()).strftime("%Y-%m-%d")
 				price24 = extractPrice(latest_city_col[1].getText())
 				price22 = extractPrice(latest_city_col[2].getText())
 				item = {}
@@ -52,29 +74,11 @@ for (ix,tr) in enumerate(rows):
 				item["price22"] = price22
 				records.append({"city":city_name.title(), "date":date, "price24":price24, "price22":price22})
 				
-				"""for (idx,city_tr) in enumerate(city_rows):
-					if idx > 1:
-						city_cols = city_tr.findAll('td')
-						date = convertToDate(city_cols[0].getText()).strftime("%Y-%m-%d")
-						price24 = extractPrice(city_cols[1].getText())
-						price22 = extractPrice(city_cols[2].getText())
-						item = {}
-						item["city"] = city_name.title()
-						item["date"] = date
-						item["price24"] = price24
-						item["price22"] = price22
-						#insertData(date, city_name.title(), price24, price22)
-						records.append({"city":city_name.title(), "date":date, "price24":price24, "price22":price22})
-						print item
-					break
-				break"""
-				
 		except:
 			print "No href"
 
 
 print records
-
 try:
 	conn = psycopg2.connect(
 	    database=url.path[1:],
@@ -92,4 +96,3 @@ try:
 	conn.close()
 except Exception, e:
 	print e
-
